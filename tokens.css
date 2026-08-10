@@ -1,0 +1,55 @@
+/* Hallmark · genre: editorial · theme: Open Road (custom) · nav: N6 masthead · footer: Ft1
+ * pre-emit critique: P5 H4 E5 S4 R5 V4
+ * Portable token set — mirror into app/globals.css :root. Pages reference tokens by name only. */
+
+:root {
+  /* Surfaces — warm bone paper band */
+  --color-paper:     oklch(97.5% 0.012 85);
+  --color-paper-2:   oklch(94.5% 0.014 85);
+  --color-paper-3:   oklch(90.5% 0.016 85);
+
+  /* Ink — warm near-black */
+  --color-ink:       oklch(21% 0.016 60);
+  --color-ink-deep:  oklch(16% 0.018 60);
+  --color-ink-2:     oklch(37% 0.014 65);
+  --color-muted:     oklch(40% 0.014 70);
+  --color-neutral:   oklch(56% 0.008 80);
+
+  /* Rules — hairlines */
+  --color-rule:      oklch(86% 0.012 80);
+  --color-rule-2:    oklch(75% 0.014 78);
+
+  /* Accent — racing red */
+  --color-accent:       oklch(50% 0.21 30);
+  --color-accent-deep:  oklch(44% 0.21 30);
+  --color-accent-soft:  oklch(95.5% 0.024 30);
+  --color-accent-ink:   oklch(98% 0.005 80);
+  --color-focus:        oklch(55% 0.17 250);
+
+  /* Modal scrim (overlay) */
+  --color-scrim:        oklch(21% 0.016 60 / 0.55);
+
+  /* Semantic statuses */
+  --color-success:     oklch(48% 0.12 150);
+  --color-success-soft: oklch(95% 0.02 150);
+  --color-warn:        oklch(55% 0.13 70);
+  --color-warn-soft:   oklch(95.5% 0.02 75);
+  --color-danger:      oklch(48% 0.19 27);
+  --color-danger-soft: oklch(95.5% 0.028 25);
+  --color-info:        oklch(48% 0.12 245);
+  --color-info-soft:   oklch(95.5% 0.02 245);
+  --color-purple:      oklch(52% 0.14 300);
+  --color-purple-soft: oklch(95.5% 0.02 300);
+
+  /* Motion */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-short: 160ms;
+  --dur-med:   240ms;
+  --dur-long:  420ms;
+
+  /* Radii */
+  --radius-control: 0.375rem;  /* buttons, inputs */
+  --radius-panel:   0.75rem;   /* cards, panels */
+}

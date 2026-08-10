@@ -1,0 +1,118 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isPlatformAdmin() {
+      return isSignedIn() && (
+        request.auth.token.role == 'admin' || 
+        getUserData().role == 'admin'
+      );
+    }
+
+    function getTenantId() {
+      return getUserData().tenantId;
+    }
+
+    function isTenantStaff(tenantId) {
+      return isSignedIn() && 
+        getTenantId() == tenantId && 
+        (getUserData().role == 'owner' || getUserData().role == 'staff');
+    }
+
+    function isTenantActive(tenantId) {
+      let tenant = get(/databases/$(database)/documents/tenants/$(tenantId)).data;
+      return tenant != null && tenant.status == 'active';
+    }
+
+    function isCustomer() {
+      return isSignedIn() && (getUserData().role == 'customer' || getUserData().role == null);
+    }
+
+    // USERS COLLECTION
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isPlatformAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && (
+        request.auth.uid == userId && 
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'tenantId'])
+      ) || isPlatformAdmin();
+      allow delete: if isPlatformAdmin();
+    }
+
+    // TENANTS COLLECTION
+    match /tenants/{tenantId} {
+      allow read: if true; // Public read for rental business names & status
+      allow create: if isSignedIn() && (request.resource.data.ownerId == request.auth.uid || isPlatformAdmin());
+      allow update: if isPlatformAdmin() || (
+        isTenantStaff(tenantId) && 
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'ownerId'])
+      );
+      allow delete: if isPlatformAdmin();
+    }
+
+    // CARS COLLECTION
+    match /cars/{carId} {
+      // Public can view available cars from active tenants
+      allow read: if isPlatformAdmin() || 
+        (isSignedIn() && isTenantStaff(resource.data.tenantId)) ||
+        (resource.data.status == 'available' && isTenantActive(resource.data.tenantId)) ||
+        (isSignedIn() && isCustomer());
+
+      // Staff can create cars if tenant is active
+      allow create: if isPlatformAdmin() || (
+        isTenantStaff(request.resource.data.tenantId) && 
+        isTenantActive(request.resource.data.tenantId)
+      );
+
+      // Staff can update/delete cars in their tenant if tenant is active
+      allow update, delete: if isPlatformAdmin() || (
+        isTenantStaff(resource.data.tenantId) && 
+        isTenantActive(resource.data.tenantId) &&
+        request.resource.data.tenantId == resource.data.tenantId
+      );
+    }
+
+    // BOOKINGS COLLECTION
+    match /bookings/{bookingId} {
+      // Tenant staff can read their tenant's bookings; customers can read their own bookings
+      allow read: if isPlatformAdmin() || 
+        (isSignedIn() && isTenantStaff(resource.data.tenantId)) ||
+        (isSignedIn() && resource.data.customerId == request.auth.uid);
+
+      // Customer can create booking if customerId matches, tenant is active, status is pending
+      allow create: if isPlatformAdmin() || (
+        isSignedIn() &&
+        request.resource.data.customerId == request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        isTenantActive(request.resource.data.tenantId)
+      );
+
+      // Status updates:
+      // 1. Staff can update booking status for their active tenant
+      // 2. Customer can only change status from 'pending' or 'confirmed' to 'cancelled'
+      allow update: if isPlatformAdmin() || (
+        isTenantStaff(resource.data.tenantId) && 
+        isTenantActive(resource.data.tenantId)
+      ) || (
+        isSignedIn() &&
+        resource.data.customerId == request.auth.uid &&
+        request.resource.data.status == 'cancelled' &&
+        (resource.data.status == 'pending' || resource.data.status == 'confirmed') &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+      );
+
+      allow delete: if isPlatformAdmin();
+    }
+
+  }
+}
