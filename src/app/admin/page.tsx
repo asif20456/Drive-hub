@@ -47,7 +47,7 @@ const DEFAULT_CAR_FORM = {
   year: new Date().getFullYear(),
   registrationNo: '',
   category: 'Sedan' as CarCategory,
-  pricePerDay: 60,
+  pricePerDay: 6000,
   imageUrl: '',
   status: 'available' as CarStatus,
 };
@@ -294,7 +294,7 @@ export default function AdminPage() {
                   {/* Status + total */}
                   <div className="md:col-span-4 flex flex-col items-start md:items-end gap-2">
                     <span className={`badge badge-${booking.status}`}>{booking.status}</span>
-                    <p className="font-mono text-xl font-semibold text-accent num">${booking.totalPrice}</p>
+                    <p className="font-mono text-xl font-semibold text-accent num">Rs {booking.totalPrice.toLocaleString()}</p>
                   </div>
 
                 </div>
@@ -382,7 +382,7 @@ export default function AdminPage() {
                       id="admin-car-reg"
                       type="text" required value={carForm.registrationNo}
                       onChange={e => setCarForm({ ...carForm, registrationNo: e.target.value })}
-                      placeholder="e.g. NY-ABC-101" className="input"
+                      placeholder="e.g. KHI-1234" className="input"
                     />
                   </div>
                 </div>
@@ -400,10 +400,10 @@ export default function AdminPage() {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="admin-car-price" className="label-mono text-[10px] block mb-1.5">Price / day ($)</label>
+                    <label htmlFor="admin-car-price" className="label-mono text-[10px] block mb-1.5">Price / day (Rs)</label>
                     <input
                       id="admin-car-price"
-                      type="number" required min={10} value={carForm.pricePerDay}
+                      type="number" required min={500} value={carForm.pricePerDay}
                       onChange={e => setCarForm({ ...carForm, pricePerDay: parseFloat(e.target.value) })}
                       className="input"
                     />
@@ -481,7 +481,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="text-right shrink-0 hidden sm:block">
-                  <p className="font-mono text-lg font-semibold text-accent num">${car.pricePerDay}</p>
+                  <p className="font-mono text-lg font-semibold text-accent num">Rs {car.pricePerDay.toLocaleString()}</p>
                   <p className="label-mono text-[9px]">/ day</p>
                 </div>
 

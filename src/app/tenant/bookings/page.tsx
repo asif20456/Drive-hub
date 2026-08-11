@@ -172,7 +172,7 @@ export default function TenantBookingsPage() {
                     </div>
                     <div className="text-[11px] text-muted ml-6">{booking.customerEmail}</div>
                     <div className="text-sm font-semibold text-ink ml-6">
-                      <span className="font-mono text-accent num">${booking.totalPrice}</span>
+                      <span className="font-mono text-accent num">Rs {booking.totalPrice.toLocaleString()}</span>
                     </div>
                   </div>
 

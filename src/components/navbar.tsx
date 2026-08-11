@@ -47,7 +47,7 @@ export function Navbar() {
                 Drive Hub
               </span>
               <span className="label-mono text-[9px] block mt-1 truncate">
-                Multi-tenant rental platform
+                Pakistan car rental platform
               </span>
             </div>
           </Link>

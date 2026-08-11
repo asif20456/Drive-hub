@@ -129,7 +129,7 @@ export default function TenantDashboardPage() {
           { icon: CarIcon, label: 'Total vehicles', value: cars.length, sub: `${availableCars} available · ${rentedCars} rented`, color: 'text-info' },
           { icon: Calendar, label: 'Total bookings', value: bookings.length, sub: `${pendingBookings} pending`, color: 'text-warn' },
           { icon: PlayCircle, label: 'Active rentals', value: activeBookings, sub: `${confirmedBookings} confirmed`, color: 'text-purple' },
-          { icon: DollarSign, label: 'Revenue earned', value: `$${totalRevenue.toLocaleString()}`, sub: 'Completed + active', color: 'text-success' },
+          { icon: DollarSign, label: 'Revenue earned', value: `Rs ${totalRevenue.toLocaleString()}`, sub: 'Completed + active', color: 'text-success' },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -204,7 +204,7 @@ export default function TenantDashboardPage() {
                   </div>
                   <div className="text-right shrink-0">
                     <span className={`badge badge-${booking.status}`}>{booking.status}</span>
-                    <p className="text-xs font-semibold text-ink num mt-1">${booking.totalPrice}</p>
+                    <p className="text-xs font-semibold text-ink num mt-1">Rs {booking.totalPrice.toLocaleString()}</p>
                   </div>
                 </div>
               ))}

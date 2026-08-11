@@ -26,32 +26,40 @@ export function QuickRoleSwitcher() {
       desc: 'Global control: suspend/reactivate tenants, view all data'
     },
     {
-      name: 'Alex Apex',
-      email: 'owner@apexrentals.com',
-      role: 'Tenant A Staff (Apex NY)',
+      name: 'Imran Sheikh',
+      email: 'owner@ridekarachi.com',
+      role: 'Tenant A Staff (RideKarachi)',
       badgeClass: 'bg-info-soft text-info border-info',
       icon: Building2,
-      desc: 'Manages Apex fleet & bookings ONLY. Cannot see Metro data.'
+      desc: 'Manages RideKarachi fleet & bookings ONLY. Cannot see Lahore Auto Hire data.'
     },
     {
-      name: 'Maria Metro',
-      email: 'owner@metrohire.com',
-      role: 'Tenant B Staff (Metro LA)',
+      name: 'Ayesha Malik',
+      email: 'owner@lahoreautohire.com',
+      role: 'Tenant B Staff (Lahore Auto Hire)',
       badgeClass: 'bg-warn-soft text-warn border-warn',
       icon: Building2,
-      desc: 'Manages Metro fleet & bookings ONLY. Cannot see Apex data.'
+      desc: 'Manages Lahore Auto Hire fleet & bookings ONLY. Cannot see RideKarachi data.'
     },
     {
-      name: 'John Doe',
-      email: 'john.customer@gmail.com',
+      name: 'Bilal Ahmed',
+      email: 'owner@capitalwheels.pk',
+      role: 'Tenant C Staff (Capital Wheels)',
+      badgeClass: 'bg-purple-soft text-purple border-purple',
+      icon: Building2,
+      desc: 'Manages Capital Wheels fleet & bookings ONLY (Islamabad).'
+    },
+    {
+      name: 'Ali Raza',
+      email: 'ali.raza@gmail.com',
       role: 'Customer 1',
       badgeClass: 'bg-success-soft text-success border-success',
       icon: UserCheck,
       desc: 'Browse cars, book dates, manage personal bookings.'
     },
     {
-      name: 'Sarah Smith',
-      email: 'sarah.customer@gmail.com',
+      name: 'Ayesha Khan',
+      email: 'ayesha.khan@gmail.com',
       role: 'Customer 2',
       badgeClass: 'bg-purple-soft text-purple border-purple',
       icon: UserCheck,

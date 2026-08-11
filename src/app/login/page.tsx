@@ -24,10 +24,11 @@ export default function LoginPage() {
 
   const testAccounts = [
     { name: 'Platform Admin', email: 'admin@carhub.com', role: 'admin', icon: ShieldAlert },
-    { name: 'Apex Owner (Tenant A)', email: 'owner@apexrentals.com', role: 'owner', icon: Building2 },
-    { name: 'Metro Owner (Tenant B)', email: 'owner@metrohire.com', role: 'owner', icon: Building2 },
-    { name: 'John Doe (Customer)', email: 'john.customer@gmail.com', role: 'customer', icon: UserCheck },
-    { name: 'Sarah Smith (Customer)', email: 'sarah.customer@gmail.com', role: 'customer', icon: UserCheck },
+    { name: 'Imran Sheikh (RideKarachi)', email: 'owner@ridekarachi.com', role: 'owner', icon: Building2 },
+    { name: 'Ayesha Malik (Lahore Auto Hire)', email: 'owner@lahoreautohire.com', role: 'owner', icon: Building2 },
+    { name: 'Bilal Ahmed (Capital Wheels)', email: 'owner@capitalwheels.pk', role: 'owner', icon: Building2 },
+    { name: 'Ali Raza (Customer)', email: 'ali.raza@gmail.com', role: 'customer', icon: UserCheck },
+    { name: 'Ayesha Khan (Customer)', email: 'ayesha.khan@gmail.com', role: 'customer', icon: UserCheck },
   ];
 
   async function handleSubmit(e: React.FormEvent) {

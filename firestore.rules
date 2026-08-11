@@ -38,6 +38,27 @@ service cloud.firestore {
       return isSignedIn() && (getUserData().role == 'customer' || getUserData().role == null);
     }
 
+    // Server-side booking integrity check: the booking must reference a real,
+    // available car owned by the claimed tenant, and the embedded carDetails
+    // must exactly match the car document — clients cannot forge prices/vehicle data.
+    function isValidBookingRequest(data) {
+      let car = get(/databases/$(database)/documents/cars/$(data.carId)).data;
+      return car != null &&
+        car.tenantId == data.tenantId &&
+        car.status == 'available' &&
+        data.carDetails.make == car.make &&
+        data.carDetails.model == car.model &&
+        data.carDetails.year == car.year &&
+        data.carDetails.registrationNo == car.registrationNo &&
+        data.carDetails.category == car.category &&
+        data.carDetails.imageUrl == car.imageUrl;
+    }
+
+    // Only valid lifecycle transitions are allowed
+    function isValidBookingStatus(status) {
+      return status in ['pending', 'confirmed', 'active', 'completed', 'cancelled'];
+    }
+
     // USERS COLLECTION
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isPlatformAdmin());
@@ -89,20 +110,24 @@ service cloud.firestore {
         (isSignedIn() && isTenantStaff(resource.data.tenantId)) ||
         (isSignedIn() && resource.data.customerId == request.auth.uid);
 
-      // Customer can create booking if customerId matches, tenant is active, status is pending
+      // Customer can create booking ONLY if it passes the server-side integrity
+      // check (real available car, matching tenant, carDetails match the car doc),
+      // customerId matches the authenticated user, tenant is active, status is pending.
       allow create: if isPlatformAdmin() || (
         isSignedIn() &&
         request.resource.data.customerId == request.auth.uid &&
         request.resource.data.status == 'pending' &&
-        isTenantActive(request.resource.data.tenantId)
+        isTenantActive(request.resource.data.tenantId) &&
+        isValidBookingRequest(request.resource.data)
       );
 
-      // Status updates:
-      // 1. Staff can update booking status for their active tenant
-      // 2. Customer can only change status from 'pending' or 'confirmed' to 'cancelled'
+      // Status updates — staff may ONLY change the status field through the
+      // valid lifecycle; customers can only cancel pending/confirmed bookings.
       allow update: if isPlatformAdmin() || (
         isTenantStaff(resource.data.tenantId) && 
-        isTenantActive(resource.data.tenantId)
+        isTenantActive(resource.data.tenantId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+        isValidBookingStatus(request.resource.data.status)
       ) || (
         isSignedIn() &&
         resource.data.customerId == request.auth.uid &&

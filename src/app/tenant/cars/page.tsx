@@ -27,7 +27,7 @@ const DEFAULT_FORM = {
   year: new Date().getFullYear(),
   registrationNo: '',
   category: 'Sedan' as CarCategory,
-  pricePerDay: 60,
+  pricePerDay: 6000,
   imageUrl: '',
   status: 'available' as CarStatus,
 };
@@ -192,7 +192,7 @@ export default function TenantCarsPage() {
                 </div>
                 <div>
                   <label className="label-mono text-[10px] block mb-1.5">Registration no.</label>
-                  <input type="text" required value={form.registrationNo} onChange={e => setForm({...form, registrationNo: e.target.value})} placeholder="e.g. NY-ABC-101" className="input" />
+                  <input type="text" required value={form.registrationNo} onChange={e => setForm({...form, registrationNo: e.target.value})} placeholder="e.g. KHI-1234" className="input" />
                 </div>
               </div>
 
@@ -204,8 +204,8 @@ export default function TenantCarsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="label-mono text-[10px] block mb-1.5">Price / day ($)</label>
-                  <input type="number" required min={10} value={form.pricePerDay} onChange={e => setForm({...form, pricePerDay: parseFloat(e.target.value)})} className="input" />
+                  <label className="label-mono text-[10px] block mb-1.5">Price / day (Rs)</label>
+                  <input type="number" required min={500} value={form.pricePerDay} onChange={e => setForm({...form, pricePerDay: parseFloat(e.target.value)})} className="input" />
                 </div>
               </div>
 
@@ -271,7 +271,7 @@ export default function TenantCarsPage() {
                   <p className="label-mono text-[10px]">{car.year} · {car.category} · {car.registrationNo}</p>
                   <h3 className="mt-1.5 font-display text-lg font-semibold text-ink">{car.make} {car.model}</h3>
                   <p className="text-sm mt-1">
-                    <span className="font-mono text-base font-semibold text-accent num">${car.pricePerDay}</span>
+                    <span className="font-mono text-base font-semibold text-accent num">Rs {car.pricePerDay.toLocaleString()}</span>
                     <span className="text-xs text-muted">/day</span>
                   </p>
                 </div>

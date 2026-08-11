@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { Car, CarCategory, Tenant } from '@/types';
 import { fetchPublicCars } from '@/lib/services/cars';
 import { fetchAllTenants } from '@/lib/services/tenants';
+import { fetchUpcomingBookedRanges } from '@/lib/services/bookings';
+import { formatDateRange } from '@/lib/format';
 import {
   Car as CarIcon,
   MapPin,
@@ -19,6 +21,7 @@ const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c34
 export default function HomePage() {
   const [cars, setCars] = useState<Car[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [bookedRanges, setBookedRanges] = useState<Record<string, { startDate: string; endDate: string } | null>>({});
   const [loading, setLoading] = useState(true);
 
   const [selectedCategory, setSelectedCategory] = useState<CarCategory | 'All'>('All');
@@ -37,6 +40,10 @@ export default function HomePage() {
     ]);
     setCars(fetchedCars);
     setTenants(fetchedTenants);
+
+    // Derive real availability from live confirmed/active bookings
+    const ranges = await fetchUpcomingBookedRanges(fetchedCars.map(c => c.id));
+    setBookedRanges(ranges);
     setLoading(false);
   }
 
@@ -62,13 +69,13 @@ export default function HomePage() {
 
       {/* ---- Catalogue header (editorial) ---- */}
       <section className="pt-2 md:pt-6">
-        <p className="label-mono">Drive Hub — verified rental fleets</p>
+        <p className="label-mono">Drive Hub — verified rental fleets · Pakistan</p>
         <h1 className="mt-4 font-display text-4xl sm:text-5xl lg:text-[3.5rem] font-semibold tracking-tight text-ink leading-[1.04] max-w-2xl">
           Premium cars, ready to drive.
         </h1>
         <p className="mt-5 text-base sm:text-lg text-muted max-w-xl leading-relaxed">
-          Browse verified independent fleets in New York and Los Angeles. Compare live daily
-          rates, check availability in real time, and book with confidence.
+          Browse verified independent fleets in Karachi, Lahore and Islamabad. Compare live daily
+          rates in rupees, check availability in real time, and book with confidence.
         </p>
 
         <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
@@ -167,6 +174,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCars.map(car => {
               const tenant = tenants.find(t => t.id === car.tenantId);
+              const bookedRange = bookedRanges[car.id];
               return (
                 <a
                   key={car.id}
@@ -187,7 +195,13 @@ export default function HomePage() {
                     />
                     <div className="absolute top-3 left-3 flex gap-2">
                       <span className="badge badge-info">{car.category}</span>
-                      <span className="badge badge-available">Available</span>
+                      {bookedRange ? (
+                        <span className="badge badge-rented">
+                          Booked {formatDateRange(bookedRange.startDate, bookedRange.endDate)}
+                        </span>
+                      ) : (
+                        <span className="badge badge-available">Available</span>
+                      )}
                     </div>
                   </div>
 
@@ -209,7 +223,7 @@ export default function HomePage() {
                     <div className="mt-4 pt-4 border-t border-rule flex items-center justify-between gap-3">
                       <p className="text-xs text-muted">
                         <span className="font-mono text-xl font-semibold text-accent num">
-                          ${car.pricePerDay}
+                          Rs {car.pricePerDay.toLocaleString()}
                         </span>{' '}
                         / day
                       </p>

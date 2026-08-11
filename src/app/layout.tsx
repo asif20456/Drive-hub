@@ -27,8 +27,8 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Drive Hub — Multi-Tenant SaaS Car Rental Platform",
-  description: "Enterprise multi-tenant car rental system. Find & book premium vehicles from verified local agencies with guaranteed availability and tenant data isolation.",
+  title: "Drive Hub — Pakistan Car Rental Platform",
+  description: "Multi-tenant car rental platform for Pakistan. Find & book vehicles from verified agencies in Karachi, Lahore and Islamabad with guaranteed availability and tenant data isolation.",
 };
 
 export default function RootLayout({
@@ -63,10 +63,10 @@ export default function RootLayout({
                   <p className="font-display text-2xl font-semibold tracking-tight text-ink">
                     Drive Hub
                   </p>
-                  <p className="label-mono mt-1.5">Multi-tenant car rental platform</p>
+                  <p className="label-mono mt-1.5">Pakistan car rental platform</p>
                 </div>
                 <p className="text-sm text-muted max-w-sm leading-relaxed">
-                  Verified independent fleets in New York &amp; Los Angeles. Tenant-isolated data, live pricing, and real-time booking conflict detection.
+                  Verified independent fleets in Karachi, Lahore &amp; Islamabad. Tenant-isolated data, live pricing in rupees, and real-time booking conflict detection.
                 </p>
               </div>
               <div className="mt-8 pt-5 border-t border-rule flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-muted">

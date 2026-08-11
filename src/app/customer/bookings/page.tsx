@@ -185,7 +185,7 @@ export default function CustomerBookingsPage() {
                 {/* Price & actions */}
                 <div className="md:col-span-3 flex flex-col justify-between items-start md:items-end">
                   <div className="text-right">
-                    <p className="font-mono text-2xl font-semibold text-accent num">${booking.totalPrice}</p>
+                    <p className="font-mono text-2xl font-semibold text-accent num">Rs {booking.totalPrice.toLocaleString()}</p>
                     <p className="label-mono text-[10px] mt-1">Total amount</p>
                   </div>
 

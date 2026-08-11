@@ -12,7 +12,7 @@ const STORAGE_KEYS = {
 
 // Bump this whenever SEED_* data changes so browsers refresh the demo dataset.
 // Note: re-seeding intentionally resets the demo dataset (same as the "Reset seed data" button).
-const SEED_VERSION = 'v3';
+const SEED_VERSION = 'v6';
 
 // Initialize seed data if empty (or the seed dataset version changed)
 export function initStorageSeed(force = false) {

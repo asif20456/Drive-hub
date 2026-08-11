@@ -152,7 +152,7 @@ export default function RegisterPage() {
                       required
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="e.g. Apex Rentals Inc."
+                      placeholder="e.g. RideKarachi Rentals"
                       className="input pl-9"
                     />
                   </div>
@@ -169,7 +169,7 @@ export default function RegisterPage() {
                       required
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
-                      placeholder="e.g. Chicago"
+                      placeholder="e.g. Karachi"
                       className="input pl-9"
                     />
                   </div>
@@ -184,7 +184,7 @@ export default function RegisterPage() {
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+1 (555) 000-0000"
+                      placeholder="+92 300 0000000"
                       className="input pl-9"
                     />
                   </div>
@@ -200,7 +200,7 @@ export default function RegisterPage() {
                       required
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      placeholder="123 Main St, Suite 100"
+                      placeholder="e.g. Shahrah-e-Faisal, Karachi"
                       className="input pl-9"
                     />
                   </div>

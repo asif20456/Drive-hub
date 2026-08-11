@@ -5,7 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { Car, Tenant } from '@/types';
 import { fetchCarById } from '@/lib/services/cars';
 import { fetchTenantById } from '@/lib/services/tenants';
-import { createBooking, calculateRentalDays, checkBookingOverlap } from '@/lib/services/bookings';
+import { createBooking, calculateRentalDays, checkBookingOverlap, fetchUpcomingBookedRanges } from '@/lib/services/bookings';
+import { formatDateRange } from '@/lib/format';
 import { useAuth } from '@/lib/auth-context';
 import toast from 'react-hot-toast';
 import {
@@ -28,6 +29,7 @@ export default function CarDetailsPage() {
 
   const [car, setCar] = useState<Car | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [bookedRange, setBookedRange] = useState<{ startDate: string; endDate: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Default dates: tomorrow to +3 days
@@ -63,6 +65,10 @@ export default function CarDetailsPage() {
       setCar(fetchedCar);
       const fetchedTenant = await fetchTenantById(fetchedCar.tenantId);
       setTenant(fetchedTenant);
+
+      // Show the next confirmed/active booking that blocks this vehicle's calendar
+      const ranges = await fetchUpcomingBookedRanges([fetchedCar.id]);
+      setBookedRange(ranges[fetchedCar.id] || null);
     }
     setLoading(false);
   }
@@ -108,9 +114,9 @@ export default function CarDetailsPage() {
       endDate,
     });
 
-    if (res.success) {
+    if (res.success && res.booking) {
       toast.success('Booking requested successfully!');
-      router.push('/customer/bookings');
+      router.push(`/customer/booking-confirmation/${res.booking.id}`);
     } else {
       toast.error(res.error || 'Failed to create booking.');
     }
@@ -147,7 +153,7 @@ export default function CarDetailsPage() {
     { label: 'Year', value: String(car.year) },
     { label: 'Category', value: car.category },
     { label: 'Registration', value: car.registrationNo, mono: true },
-    { label: 'Daily rate', value: `$${car.pricePerDay}`, accent: true },
+    { label: 'Daily rate', value: `Rs ${car.pricePerDay.toLocaleString()}`, accent: true },
     { label: 'Agency', value: tenant?.name || car.tenantName || 'Rental agency' },
     { label: 'Location', value: tenant ? `${tenant.city} — ${tenant.address}` : '—' },
     { label: 'Status', value: car.status, mono: true },
@@ -187,6 +193,11 @@ export default function CarDetailsPage() {
               <span className={`badge badge-${car.status === 'available' ? 'available' : car.status === 'rented' ? 'rented' : car.status === 'maintenance' ? 'maintenance' : 'inactive'}`}>
                 {car.status}
               </span>
+              {(car.status === 'available' || car.status === 'rented') && bookedRange && (
+                <span className="badge badge-rented">
+                  Booked {formatDateRange(bookedRange.startDate, bookedRange.endDate)}
+                </span>
+              )}
             </div>
             <figcaption className="px-5 py-3 flex items-center justify-between gap-3 border-t border-rule">
               <span className="label-mono">{car.year} model</span>
@@ -201,7 +212,7 @@ export default function CarDetailsPage() {
             </h1>
             <p className="mt-3 text-base text-muted max-w-xl leading-relaxed">
               {car.year} {car.make} {car.model} from {tenant?.name || car.tenantName || 'a verified rental agency'}.
-              Priced at ${car.pricePerDay} per day, available to book with live conflict detection.
+              Priced at Rs {car.pricePerDay.toLocaleString()} per day, available to book with live conflict detection.
             </p>
           </div>
 
@@ -246,7 +257,7 @@ export default function CarDetailsPage() {
 
             <div className="flex items-center justify-between border-b border-rule pb-4">
               <div>
-                <span className="font-mono text-3xl font-semibold text-accent num">${car.pricePerDay}</span>
+                <span className="font-mono text-3xl font-semibold text-accent num">Rs {car.pricePerDay.toLocaleString()}</span>
                 <span className="text-xs text-muted"> / day</span>
               </div>
               <span className="label-mono text-[10px]">Instant price calc</span>
@@ -307,7 +318,7 @@ export default function CarDetailsPage() {
               <div className="border border-rule rounded-md p-4 space-y-2 text-xs">
                 <div className="flex justify-between text-muted">
                   <span>Daily rate</span>
-                  <span className="font-mono num">${car.pricePerDay}</span>
+                  <span className="font-mono num">Rs {car.pricePerDay.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-muted">
                   <span>Duration</span>
@@ -315,7 +326,7 @@ export default function CarDetailsPage() {
                 </div>
                 <div className="flex justify-between items-center pt-2.5 mt-2.5 border-t border-rule">
                   <span className="font-semibold text-ink">Total</span>
-                  <span className="font-mono text-xl font-semibold text-accent num">${totalPrice}</span>
+                  <span className="font-mono text-xl font-semibold text-accent num">Rs {totalPrice.toLocaleString()}</span>
                 </div>
               </div>
 

@@ -1,8 +1,8 @@
 import { Booking, BookingStatus } from '@/types';
 import { db, isFirebaseConfigured } from '../firebase';
-import { collection, doc, getDocs, setDoc, updateDoc, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where } from 'firebase/firestore';
 import { getLocalBookings, saveLocalBooking, getLocalTenants } from '../storage';
-import { fetchCarById } from './cars';
+import { fetchCarById, updateCar } from './cars';
 
 const COLLECTION_BOOKINGS = 'bookings';
 
@@ -15,6 +15,80 @@ export function calculateRentalDays(startDate: string, endDate: string): number 
   return Math.max(1, diffDays);
 }
 
+/**
+ * Fetch the confirmed/active bookings that block availability for the given cars.
+ *
+ * Note: booking docs contain customer PII (name/email), so Firestore rules do not
+ * expose them to anonymous readers. Every write in this app also mirrors to
+ * localStorage, so the local fallback keeps availability honest in the demo —
+ * and the Firestore path is still used whenever the current user can read.
+ */
+async function fetchBlockingBookings(carIds: string[]): Promise<Booking[]> {
+  if (carIds.length === 0) return [];
+
+  if (isFirebaseConfigured()) {
+    try {
+      const q = query(
+        collection(db, COLLECTION_BOOKINGS),
+        where('status', 'in', ['confirmed', 'active'])
+      );
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
+        return bookings.filter(b => carIds.includes(b.carId));
+      }
+    } catch (err) {
+      console.warn("Firestore fetch blocking bookings fallback:", err);
+    }
+  }
+
+  return getLocalBookings().filter(
+    b => carIds.includes(b.carId) && (b.status === 'confirmed' || b.status === 'active')
+  );
+}
+
+/**
+ * For each car, the next confirmed/active booking that still blocks the calendar
+ * (end date >= today). A null entry means the car is freely available.
+ */
+export async function fetchUpcomingBookedRanges(
+  carIds: string[]
+): Promise<Record<string, { startDate: string; endDate: string } | null>> {
+  const ranges: Record<string, { startDate: string; endDate: string } | null> = {};
+  for (const carId of carIds) ranges[carId] = null;
+
+  const today = new Date().toISOString().split('T')[0];
+  const bookings = await fetchBlockingBookings(carIds);
+
+  for (const b of bookings) {
+    if (b.endDate < today) continue; // booking already finished
+    const current = ranges[b.carId];
+    if (!current || b.startDate < current.startDate) {
+      ranges[b.carId] = { startDate: b.startDate, endDate: b.endDate };
+    }
+  }
+  return ranges;
+}
+
+/**
+ * Keep a car's operational status in step with its bookings: a car with an
+ * active rental is "rented", otherwise it returns to "available". Cars set to
+ * inactive/maintenance by staff are left untouched.
+ */
+async function syncCarStatusFromBookings(carId: string): Promise<void> {
+  const car = await fetchCarById(carId);
+  if (!car || car.status === 'inactive' || car.status === 'maintenance') return;
+
+  const blocking = await fetchBlockingBookings([carId]);
+  const targetStatus: 'available' | 'rented' = blocking.some(b => b.status === 'active')
+    ? 'rented'
+    : 'available';
+
+  if (car.status !== targetStatus) {
+    await updateCar(carId, { status: targetStatus });
+  }
+}
+
 // Check booking overlap for a specific car
 export async function checkBookingOverlap(
   carId: string,
@@ -22,32 +96,9 @@ export async function checkBookingOverlap(
   endDate: string,
   excludeBookingId?: string
 ): Promise<{ hasOverlap: boolean; conflictingBooking?: Booking }> {
-  let existingBookings: Booking[] = [];
-
-  if (isFirebaseConfigured()) {
-    try {
-      const q = query(
-        collection(db, COLLECTION_BOOKINGS),
-        where('carId', '==', carId)
-      );
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        existingBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
-      } else {
-        existingBookings = getLocalBookings().filter(b => b.carId === carId);
-      }
-    } catch (err) {
-      console.warn("Firestore check overlap fallback:", err);
-      existingBookings = getLocalBookings().filter(b => b.carId === carId);
-    }
-  } else {
-    existingBookings = getLocalBookings().filter(b => b.carId === carId);
-  }
-
-  // Filter only 'confirmed' or 'active' bookings (pending or cancelled do not block dates)
-  const activeOrConfirmed = existingBookings.filter(b => 
-    (b.status === 'confirmed' || b.status === 'active') &&
-    b.id !== excludeBookingId
+  // Only 'confirmed' or 'active' bookings block dates (pending/cancelled do not)
+  const activeOrConfirmed = (await fetchBlockingBookings([carId])).filter(
+    b => b.id !== excludeBookingId
   );
 
   const reqStart = new Date(startDate).getTime();
@@ -160,6 +211,21 @@ export async function fetchAllBookings(): Promise<Booking[]> {
   return getLocalBookings();
 }
 
+// Fetch a single booking by id
+export async function fetchBookingById(bookingId: string): Promise<Booking | null> {
+  if (isFirebaseConfigured()) {
+    try {
+      const snap = await getDoc(doc(db, COLLECTION_BOOKINGS, bookingId));
+      if (snap.exists()) {
+        return { id: snap.id, ...snap.data() } as Booking;
+      }
+    } catch (err) {
+      console.warn("Firestore fetch booking fallback:", err);
+    }
+  }
+  return getLocalBookings().find(b => b.id === bookingId) || null;
+}
+
 // Fetch bookings by tenant
 export async function fetchTenantBookings(tenantId: string): Promise<Booking[]> {
   if (isFirebaseConfigured()) {
@@ -226,6 +292,9 @@ export async function updateBookingStatus(
 
   booking.status = newStatus;
   saveLocalBooking(booking);
+
+  // Reflect the new state on the vehicle itself (rented while active, else available)
+  await syncCarStatusFromBookings(booking.carId);
 
   return { success: true };
 }
