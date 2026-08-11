@@ -67,7 +67,7 @@ export default function BookingConfirmationPage() {
       <div className="max-w-xl mx-auto py-16 text-center space-y-4">
         <Inbox className="w-12 h-12 text-neutral mx-auto" />
         <h1 className="font-display text-2xl font-semibold text-ink">Booking not found</h1>
-        <p className="text-sm text-muted">We couldn't locate that booking reference.</p>
+        <p className="text-sm text-muted">We couldn&apos;t locate that booking reference.</p>
         <button
           onClick={() => router.push('/customer/bookings')}
           className="btn btn-primary mt-2"
@@ -86,7 +86,7 @@ export default function BookingConfirmationPage() {
       <div className="max-w-xl mx-auto py-16 text-center space-y-4">
         <ShieldCheck className="w-12 h-12 text-neutral mx-auto" />
         <h1 className="font-display text-2xl font-semibold text-ink">Booking not found</h1>
-        <p className="text-sm text-muted">This booking reference doesn't belong to your account.</p>
+        <p className="text-sm text-muted">This booking reference doesn&apos;t belong to your account.</p>
         <button
           onClick={() => router.push('/customer/bookings')}
           className="btn btn-primary mt-2"
@@ -197,7 +197,7 @@ export default function BookingConfirmationPage() {
           </li>
           <li className="flex items-start gap-3">
             <span className="font-mono text-[11px] text-accent font-semibold mt-0.5">02</span>
-            <span>You'll see the status change to <span className="text-ink font-medium">confirmed</span> in My bookings.</span>
+            <span>You&apos;ll see the status change to <span className="text-ink font-medium">confirmed</span> in My bookings.</span>
           </li>
           <li className="flex items-start gap-3">
             <span className="font-mono text-[11px] text-accent font-semibold mt-0.5">03</span>
